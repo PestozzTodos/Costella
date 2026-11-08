@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Costella</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--sky1:#0b0d22;--sky2:#1b1642;--ink:#f1ecff;--muted:#a79fcf;--panel:#15132f;--line:rgba(200,190,255,.28);--btn:#f1ecff;--btnink:#15132f;
+--ui:"Instrument Sans",system-ui,sans-serif;--serif:"Fraunces",Georgia,serif;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--sky1:#f4efff;--sky2:#d9d2f7;--ink:#1d1740;--muted:#6a60a0;--panel:#fbf9ff;--line:rgba(60,50,130,.3);--btn:#1d1740;--btnink:#f4efff;color-scheme:light}}
+html,body{height:100%;margin:0}
+body{background:var(--sky1);color:var(--ink);font-family:var(--ui);overflow:hidden;-webkit-tap-highlight-color:transparent}
+#cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+header{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);padding:14px 18px;pointer-events:none}
+header h1{margin:0;font:italic 500 26px/1 var(--serif);letter-spacing:.01em}
+header p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+nav{position:fixed;z-index:4;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;background:linear-gradient(transparent,var(--sky1) 70%)}
+nav button.t{background:none;border:0;color:var(--muted);font:600 14px var(--ui);padding:10px 14px;min-height:44px}
+nav button.t[aria-current=true]{color:var(--ink);text-decoration:underline;text-underline-offset:6px}
+nav button.plus{width:56px;height:56px;border-radius:50%;border:0;background:var(--btn);color:var(--btnink);font:400 30px/1 var(--serif);box-shadow:0 0 28px rgba(255,212,121,.55)}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid #ffd479;outline-offset:2px}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:78%;overflow:auto;background:var(--panel);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 20px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .28s ease;z-index:5}
+.sheet.open{transform:none}
+.sheet .who{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.big{font:400 22px/1.35 var(--serif);margin:10px 0 6px}
+.life{font-size:13px;color:var(--muted);margin:0 0 14px}
+.bar{height:3px;border-radius:2px;background:var(--line);margin:0 0 14px;overflow:hidden}
+.bar i{display:block;height:100%;background:#ffd479}
+.row{display:flex;gap:10px;margin-top:12px}
+.btn{background:var(--btn);color:var(--btnink);border:0;border-radius:999px;padding:12px 18px;font:600 14px var(--ui);min-height:44px}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.link{border-left:2px solid var(--line);padding:2px 0 2px 12px;margin:10px 0;font:italic 400 16px/1.4 var(--serif)}
+.link small{display:block;font:400 12px var(--ui);color:var(--muted);font-style:normal}
+textarea,input{width:100%;box-sizing:border-box;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px;font:400 18px/1.4 var(--serif)}
+input{font:400 16px var(--ui)}
+.moods{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.mood{border:1px solid var(--line);background:none;color:var(--ink);border-radius:999px;padding:8px 12px;font:600 13px var(--ui);display:flex;align-items:center;gap:6px;min-height:40px}
+.mood[aria-pressed=true]{border-color:var(--ink)}
+.count{font-size:12px;color:var(--muted);text-align:right}
+.list{position:fixed;inset:0;background:var(--sky1);overflow:auto;padding:96px 18px 110px;display:none;z-index:4}
+.list.show{display:block}
+.list h2{font:italic 500 24px var(--serif);margin:0 0 6px}
+.list .sub{color:var(--muted);font-size:14px;margin:0 0 18px;max-width:46ch}
+.card{display:block;width:100%;text-align:left;background:none;color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.card b{font:italic 400 18px/1.35 var(--serif);display:block;margin-bottom:6px;font-weight:400}
+.card span{font-size:13px;color:var(--muted)}
+.hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 14px;transition:opacity .6s;white-space:nowrap}
+</style>
+</head>
+<body>
+<canvas id="cv" aria-label="Il cielo di Costella: ogni stella è un pensiero"></canvas>
+<header><h1>Costella</h1><p>Il social dove i pensieri sono stelle.</p></header>
+<div class="hint" id="hint">Trascina il cielo. Tocca una stella.</div>
+
+<div class="list" id="lConst"></div>
+<div class="list" id="lMe"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-live="polite"></div>
+<div class="sheet" id="comp" role="dialog"></div>
+
+<nav>
+  <button class="t" data-tab="sky" aria-current="true">Cielo</button>
+  <button class="t" data-tab="const">Costellazioni</button>
+  <button class="plus" id="plus" aria-label="Accendi una stella">+</button>
+  <button class="t" data-tab="me">Tu</button>
+</nav>
+
+<script>
+(function(){
+const W=1600,H=1600,LIFE=36*3600e3,H1=3600e3;
+const MOODS=[["Calore","#ffd479"],["Calma","#7fd6ff"],["Amore","#ff8fb1"],["Mistero","#a99bff"],["Gioia","#8ff0b5"]];
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');
+const now=()=>Date.now();
+let me="tu",stars=[],off={x:0,y:0},dpr=1,vw=0,vh=0,sel=null,tab="sky",mood=0,replyTo=null;
+const ADJ=["viandante","notturno","lontano","gentile","errante","silente","lucente","sognante"];
+const API="https://script.google.com/macros/s/AKfycbz8O9r4MI3grhjha0uxs_vmoYyrmD4x-wk0TQxpYjFfE3v0XP9NiiCg70ypGUPwCXxWVg/exec",remoteOn=API.indexOf("script.google.com")>-1;
+let myid="me",remote=[],online=false,centered=false,toastT=null,uid="",pending=0;
+const rname=()=>ADJ[Math.floor(Math.random()*ADJ.length)]+"-"+(10+Math.floor(Math.random()*90));
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function say(m){const h=document.getElementById('hint');h.textContent=m;h.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>{h.style.opacity=0},4500)}
+function rebuild(){
+  stars=remote.map(x=>Object.assign({},x,{uid:x.mine?myid:"x",author:x.name}));
+  const m={};stars.forEach(x=>{x.lt=x.t;m[x.id]=x});
+  stars.forEach(x=>{const q=m[x.p];if(q&&x.t>q.lt)q.lt=x.t});
+  stars=stars.filter(x=>now()-x.lt<LIFE);
+}
+function setup(){
+  uid=store('c_uid');
+  if(!/^[a-f0-9]{32}$/.test(uid||'')){uid=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');store('c_uid',uid)}
+  me=store('c_name');if(!me){me=rname();store('c_name',me)}
+  if(!remoteOn){try{remote=JSON.parse(store('c_local')||'[]')}catch(e){remote=[]}}
+  rebuild();
+}
+function saveLocal(){store('c_local',JSON.stringify(remote.filter(x=>x.mine)))}
+function post(b){return fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)}).then(r=>r.json())}
+async function poll(){
+  if(!remoteOn||document.hidden||pending)return;
+  try{const r=await fetch(API+"?uid="+uid);const d=await r.json();if(d.ok&&!pending){remote=d.stars;online=true;rebuild();refreshUI()}}
+  catch(e){online=false;status()}
+}
+async function addStar(x){
+  const o={id:x.id,name:me,text:x.text,c:x.c,t:x.t,p:x.p,x:x.x,y:x.y,mine:true};
+  remote.push(o);rebuild();
+  if(!remoteOn){saveLocal();return}
+  pending++;
+  try{
+    const r=await post({action:"add",uid:uid,id:o.id,name:me,text:o.text,c:o.c,p:o.p||"",x:o.x,y:o.y});
+    if(!r.ok)throw r.error||"err";
+  }catch(e){
+    remote=remote.filter(z=>z.id!==o.id);rebuild();
+    say(e==="rate"?"Calma: hai acceso troppe stelle in poco tempo.":"Non sono riuscito ad accendere la stella. Riprova tra poco.");
+  }
+  pending--;poll();
+}
+async function delStar(x){
+  remote=remote.filter(o=>o.id!==x.id);rebuild();
+  if(!remoteOn){saveLocal();return}
+  pending++;try{await post({action:"delete",uid:uid,id:x.id})}catch(e){}pending--;poll();
+}
+function status(){document.querySelector('header p').textContent=remoteOn?(online?"Cielo condiviso: vedi le stelle di tutti.":"Mi collego al cielo condiviso…"):"Cielo solo tuo: le stelle restano su questo dispositivo."}
+function refreshUI(){
+  status();
+  if(sel){sel=byId(sel.id)||null}
+  if(tab==='const')renderConst();if(tab==='me')renderMe();
+  if(stars.length){hideHint();if(!centered){centered=true;const f=stars.slice().sort((a,b)=>light(b)-light(a))[0];if(f&&!drag)centerOn(f)}}
+}
+const light=s=>Math.max(0,1-(now()-s.lt)/LIFE);
+const byId=id=>stars.find(s=>s.id===id);
+const kids=s=>stars.filter(k=>k.p===s.id);
+function root(s){while(s.p&&byId(s.p))s=byId(s.p);return s}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function ago(ms){const m=Math.round(ms/6e4);if(m<60)return m<2?"adesso":m+" min fa";const h=Math.round(m/60);return h<24?h+" h fa":Math.round(h/24)+" g fa"}
+function left(s){const ms=LIFE-(now()-s.lt);if(ms<=0)return"si è spenta";const h=Math.ceil(ms/H1);return h>=24?"brilla ancora per circa "+Math.round(h/24)+" giorno":"brilla ancora per circa "+h+" h"}
+
+function resize(){dpr=window.devicePixelRatio||1;vw=innerWidth;vh=innerHeight;cv.width=vw*dpr;cv.height=vh*dpr;cx.setTransform(dpr,0,0,dpr,0,0)}
+function clamp(){off.x=Math.min(200,Math.max(vw-W-200,off.x));off.y=Math.min(200,Math.max(vh-H-200,off.y))}
+const bg=Array.from({length:140},(_,i)=>({x:Math.random()*W*1.2,y:Math.random()*H*1.2,r:Math.random()*1.3+.3,f:Math.random()*.4+.2,k:Math.random()*6}));
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function draw(t){
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches||document.documentElement.dataset.theme==="dark";
+  const g=cx.createLinearGradient(0,0,0,vh);g.addColorStop(0,css('--sky1'));g.addColorStop(1,css('--sky2'));
+  cx.fillStyle=g;cx.fillRect(0,0,vw,vh);
+  cx.fillStyle=dark?'#fff':'#5a4fb0';
+  for(const b of bg){const px=((b.x+off.x*b.f)%vw+vw)%vw,py=((b.y+off.y*b.f)%vh+vh)%vh;cx.globalAlpha=.25+.25*Math.sin(t/900+b.k);cx.beginPath();cx.arc(px,py,b.r,0,7);cx.fill()}
+  cx.globalAlpha=1;
+  cx.lineWidth=1.2;
+  for(const s of stars){if(!s.p)continue;const p=byId(s.p);if(!p)continue;
+    const l=Math.min(light(s),light(p));if(l<=0)continue;
+    cx.strokeStyle=MOODS[s.c][1];cx.globalAlpha=.15+.5*l;cx.beginPath();cx.moveTo(p.x+off.x,p.y+off.y);cx.lineTo(s.x+off.x,s.y+off.y);cx.stroke()}
+  for(const s of stars){
+    const l=light(s),x=s.x+off.x,y=s.y+off.y;
+    if(x<-60||y<-60||x>vw+60||y>vh+60)continue;
+    const r=3+8*l+(sel===s?3:0),tw=1+.12*Math.sin(t/500+s.x);
+    const col=MOODS[s.c][1];
+    cx.globalAlpha=.12+.5*l;
+    const gr=cx.createRadialGradient(x,y,0,x,y,r*4*tw);gr.addColorStop(0,col);gr.addColorStop(1,'transparent');
+    cx.fillStyle=gr;cx.beginPath();cx.arc(x,y,r*4*tw,0,7);cx.fill();
+    cx.globalAlpha=.35+.65*l;cx.fillStyle=col;cx.beginPath();cx.arc(x,y,r*.6,0,7);cx.fill();
+    if(s.uid===myid){cx.globalAlpha=.8;cx.strokeStyle=col;cx.lineWidth=1;cx.beginPath();cx.arc(x,y,r+4,0,7);cx.stroke()}
+  }
+  cx.globalAlpha=1;
+  requestAnimationFrame(draw);
+}
+// interazione
+let drag=null;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,ox:off.x,oy:off.y,m:false};cv.style.cursor='grabbing'});
+cv.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>6)drag.m=true;if(drag.m){off.x=drag.ox+dx;off.y=drag.oy+dy;clamp()}});
+cv.addEventListener('pointerup',e=>{cv.style.cursor='grab';if(drag&&!drag.m){
+  const px=e.clientX-off.x,py=e.clientY-off.y;let best=null,bd=34*34;
+  for(const s of stars){const d=(s.x-px)**2+(s.y-py)**2;if(d<bd){bd=d;best=s}}
+  best?openStar(best):closeSheets()}
+  drag=null;hideHint()});
+function hideHint(){if(stars.length)document.getElementById('hint').style.opacity=0}
+function centerOn(s){off.x=vw/2-s.x;off.y=vh/2-s.y-60;clamp()}
+
+// scheda stella
+const sheet=document.getElementById('sheet'),comp=document.getElementById('comp');
+function openStar(s){
+  sel=s;comp.classList.remove('open');
+  const p=s.p&&byId(s.p),ks=kids(s),l=light(s);
+  let h='<div class="who"><span class="dot" style="background:'+MOODS[s.c][1]+'"></span>@'+esc(s.author)+' · '+MOODS[s.c][0]+' · '+ago(now()-s.t0||0)+'</div>';
+  h='<div class="who"><span class="dot" style="background:'+MOODS[s.c][1]+'"></span>@'+esc(s.author)+' · '+MOODS[s.c][0]+'</div>';
+  h+='<p class="big">'+esc(s.text)+'</p><div class="bar"><i style="width:'+Math.round(l*100)+'%"></i></div><p class="life">'+left(s)+'. Ogni stella collegata la riaccende.</p>';
+  if(p)h+='<div class="link"><small>Collegata a @'+esc(p.author)+'</small>'+esc(p.text)+'</div>';
+  ks.forEach(k=>{h+='<div class="link"><small>@'+esc(k.author)+' ha collegato</small>'+esc(k.text)+'</div>'});
+  h+='<div class="row"><button class="btn" id="bLink">Collega una stella</button><button class="btn ghost" id="bX">Chiudi</button>'+(s.uid===myid?'<button class="btn ghost" id="bDel">Elimina</button>':'')+'</div>';
+  sheet.innerHTML=h;sheet.classList.add('open');
+  document.getElementById('bLink').onclick=()=>openComp(s);
+  document.getElementById('bX').onclick=closeSheets;
+  const bd=document.getElementById('bDel');if(bd)bd.onclick=()=>{delStar(s);closeSheets()};
+  if(p||ks.length){}
+  centerOnSoft(s);
+}
+function centerOnSoft(s){off.x=vw/2-s.x;off.y=vh*.28-s.y;clamp()}
+function closeSheets(){sel=null;sheet.classList.remove('open');comp.classList.remove('open')}
+
+// composizione
+function openComp(parent){
+  replyTo=parent||null;sheet.classList.remove('open');
+  let h='<div class="who">'+(parent?'Colleghi la tua stella a @'+esc(parent.author)+': «'+esc(parent.text.slice(0,60))+(parent.text.length>60?'…':'')+'»':'Nuova stella nel cielo')+'</div>';
+  h+='<textarea id="tx" rows="3" maxlength="140" placeholder="Un pensiero, una frase, una domanda. Massimo 140 caratteri."></textarea><div class="count" id="ct">0 / 140</div>';
+  h+='<div class="moods">'+MOODS.map((m,i)=>'<button class="mood" data-i="'+i+'" aria-pressed="'+(i===mood)+'"><span class="dot" style="background:'+m[1]+'"></span>'+m[0]+'</button>').join('')+'</div>';
+  h+='<div class="row"><button class="btn" id="bOk">Accendi la stella</button><button class="btn ghost" id="bNo">Annulla</button></div>';
+  comp.innerHTML=h;comp.classList.add('open');
+  const tx=document.getElementById('tx');setTimeout(()=>tx.focus(),300);
+  tx.oninput=()=>document.getElementById('ct').textContent=tx.value.length+' / 140';
+  comp.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{mood=+b.dataset.i;comp.querySelectorAll('.mood').forEach(o=>o.setAttribute('aria-pressed',o===b))});
+  document.getElementById('bNo').onclick=closeSheets;
+  document.getElementById('bOk').onclick=()=>{
+    const v=tx.value.trim();if(!v){tx.focus();return}
+    let x,y;
+    if(replyTo){const a=Math.random()*6.28,d=90+Math.random()*60;x=replyTo.x+Math.cos(a)*d;y=replyTo.y+Math.sin(a)*d}
+    else{x=300+Math.random()*1000;y=300+Math.random()*1000}
+    x=Math.min(W-40,Math.max(40,x));y=Math.min(H-40,Math.max(40,y));
+    const s={id:'u'+Math.random().toString(36).slice(2,12),text:v,author:me,uid:myid,c:mood,t:now(),lt:now(),p:replyTo?replyTo.id:null,x:x,y:y};
+    addStar(s);hideHint();comp.classList.remove('open');setTab('sky');openStar(byId(s.id)||s);
+  };
+}
+document.getElementById('plus').onclick=()=>{setTab('sky');openComp(null)};
+
+// tab
+const lC=document.getElementById('lConst'),lM=document.getElementById('lMe');
+function setTab(t){
+  tab=t;closeSheets();
+  document.querySelectorAll('nav .t').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t));
+  lC.classList.toggle('show',t==='const');lM.classList.toggle('show',t==='me');
+  if(t==='const')renderConst();if(t==='me')renderMe();
+}
+document.querySelectorAll('nav .t').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+function renderConst(){
+  const groups={};
+  stars.forEach(s=>{const r=root(s).id;(groups[r]=groups[r]||[]).push(s)});
+  const arr=Object.values(groups).filter(g=>g.length>1&&g.some(s=>light(s)>0)).sort((a,b)=>Math.max(...b.map(light))-Math.max(...a.map(light)));
+  let h='<h2>Costellazioni</h2><p class="sub">Quando le stelle si collegano nasce una costellazione. Qui non contano i follower: conta chi risponde a chi.</p>';
+  if(!arr.length)h+='<p class="sub">Nessuna costellazione accesa. Collega due stelle per crearne una.</p>';
+  arr.forEach((g,i)=>{const r=root(g[0]),people=[...new Set(g.map(s=>s.author))];
+    h+='<button class="card" data-r="'+r.id+'"><b>«'+esc(r.text.slice(0,90))+(r.text.length>90?'…':'')+'»</b><span>'+g.length+' stelle, '+people.length+' voci: '+people.map(p=>'@'+esc(p)).join(', ')+'</span></button>'});
+  lC.innerHTML=h;
+  lC.querySelectorAll('.card').forEach(c=>c.onclick=()=>{const r=byId(c.dataset.r);setTab('sky');openStar(r)});
+}
+function renderMe(){
+  const mine=stars.filter(s=>s.uid===myid);
+  let h='<h2>Il tuo angolo di cielo</h2><p class="sub">Nessun account, nessun follower, nessun contatore di like.</p>';
+  h+='<p class="sub">Per gli altri sei <b>@'+esc(me)+'</b>. Il nome è casuale: nessuno sa chi sei.</p>';
+  h+='<p class="sub">'+(mine.length?'Le tue stelle':'Non hai ancora acceso nessuna stella.')+'</p>';
+  mine.forEach(s=>{h+='<button class="card" data-i="'+s.id+'"><b>«'+esc(s.text)+'»</b><span>'+left(s)+', '+kids(s).length+' collegamenti</span></button>'});
+  lM.innerHTML=h;
+    lM.querySelectorAll('.card').forEach(c=>c.onclick=()=>{setTab('sky');openStar(byId(c.dataset.i))});
+}
+
+addEventListener('resize',()=>{resize();clamp()});
+setup();resize();off.x=vw/2-W/2;off.y=vh/2-H/2;
+{const f=stars.slice().sort((a,b)=>light(b)-light(a))[0];if(f)centerOn(f)}
+clamp();requestAnimationFrame(draw);status();poll();setInterval(poll,10000);
+if(!stars.length)document.getElementById('hint').textContent="Il cielo è vuoto. Tocca + e accendi la prima stella.";setTimeout(hideHint,6000);
+})();
+</script>
+</body>
+</html>
