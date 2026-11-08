@@ -62,4 +62,4 @@ Dopo ogni modifica devi creare una **nuova versione** del deployment (*Esegui il
 
 ---
 
-Fatto con l'aiuto di Claude. ✨
+Fatto da Pestozz Todos con l'aiuto di Claude. ✨
